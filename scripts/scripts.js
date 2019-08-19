@@ -5,15 +5,28 @@ const searchObject = document.querySelector('.search input');
 const todoList = document.querySelector('.todos');
 const searchForm = document.querySelector('.search');
 
-
 //Code for adding new task
 addObject.addEventListener('submit', (e) => {
     e.preventDefault();  //Prevents page refreshing after submitting form
 
     const addObjectFormInput = document.querySelector('.add input');
-    const pattern = /^[a-zA-Z0-9]{1,}$/; //RegEx pattern
+    const pattern = /^[^<>]{1,}$/; //RegEx pattern
 
-    if(pattern.test(addObjectFormInput.value) == true){ //RegEx validation
+    if(pattern.test(addObjectFormInput.value) && storageAvailable('localStorage')){ //RegEx and local storage validation
+
+        const todo = addObject.add.value.trim();
+
+        todoList.innerHTML += 
+        `<li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>${todo}</span>
+            <i class="far fa-trash-alt delete"></i>
+        </li>`;
+    
+        localStorage.setItem(todo, ""); //Adds To Do to local storage
+
+        addObject.reset();  //Reset input field
+
+    } else if(pattern.test(addObjectFormInput.value)){  //RegEx validation
 
         const todo = addObject.add.value.trim();
 
@@ -24,6 +37,7 @@ addObject.addEventListener('submit', (e) => {
         </li>`;
     
         addObject.reset();  //Reset input field
+        
     } else{
         alert("Próbując stworzyć nowe zadanie użyto niedozwolonych znaków. Dozwolone są tylko liczby i słowa.")
     }
@@ -33,6 +47,7 @@ addObject.addEventListener('submit', (e) => {
 //Code for deleting finished tasks
 todoList.addEventListener('click', (e) => {
     if(e.target.classList.contains("delete")){
+        localStorage.removeItem(e.target.parentElement.querySelector('span').innerText); //Removes item from local storage
         e.target.parentElement.remove();
     };
 });
@@ -68,3 +83,42 @@ searchObject.addEventListener('keyup', () => {
 searchForm.addEventListener('submit', (e) => {
     e.preventDefault();
 });
+
+//Checks if local Storage is availble
+function storageAvailable(type) {
+    let storage;
+    try {
+        storage = window[type];
+        let x = '__storage_test__';
+        storage.setItem(x, x);
+        storage.removeItem(x);
+        return true;
+    }
+    catch(e) {
+        return e instanceof DOMException && (
+            // everything except Firefox
+            e.code === 22 ||
+            // Firefox
+            e.code === 1014 ||
+            // test name field too, because code might not be present
+            // everything except Firefox
+            e.name === 'QuotaExceededError' ||
+            // Firefox
+            e.name === 'NS_ERROR_DOM_QUOTA_REACHED') &&
+            // acknowledge QuotaExceededError only if there's something already stored
+            (storage && storage.length !== 0);
+    }
+}
+
+//Access data in local storage and adds saved todos to list
+const addSavedTodos = () => {
+    for(i=0; i<localStorage.length; i++){
+        todoList.innerHTML += 
+        `<li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>${localStorage.key([i])}</span>
+            <i class="far fa-trash-alt delete"></i>
+        </li>`;
+    }
+};
+
+addSavedTodos(); //Adds saved todos on page on load

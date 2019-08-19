@@ -27,6 +27,11 @@ input[type="text"]:focus{
     padding-left: 2px
 }
 
+.todos li span{
+    word-wrap: break-word;
+    flex-basis: 300px;
+}
+
 .delete{
     cursor: pointer;
 }
